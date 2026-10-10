@@ -1,0 +1,19 @@
+# Database
+
+Local database: ignored `prisma/velocity.db`. Schema: `prisma/schema.prisma`. Eight additive SQLite migrations are checked in and applied. `npm.cmd run db:migrate` applies pending migrations; `npm.cmd run db:seed` preserves existing accounts and rides, adding missing plan/achievement/demo-sponsor definitions. Node 24 pre-creates the file to avoid the Windows Prisma engine’s missing-file error. Stop project servers before Prisma generation on Windows to release its DLL.
+
+Models: User, Session, PasswordReset, Station, Bicycle, Rental, RidePoint, Territory, TerritoryInfluence, Season, Mission, UserMission, Reward, RewardRedemption, WalletTransaction, Team, Organization, CorporateChallenge, Landmark, PassportStamp, Achievement, UserAchievement, Notification, MaintenanceIssue and AuditLog. Foreign keys and query indexes protect relationships and common lookups.
+
+Added models: TerritoryContribution, TerritoryOwnershipHistory, MissionExploration, MissionVisit, SeasonStanding, Battle, BattleParticipant, BattleScore, MembershipInvitation, SystemSetting, FeedbackReport, PricingPlan, Subscription, EmailVerification and Sponsor. Trusted contributions and battle scores reference rentals; distinct exploration/day/district keys and frozen standings have unique constraints. Mission joins capture their time; older seeded joins retain a null historical timestamp and use the mission start as the documented fallback.
+
+Unique constraints cover email, bike code, ride step, user/mission, user/territory/season, user/landmark, user/achievement, redemption request key and wallet reference. Atomic inventory decrements, balance checks and completion writes run in transactions.
+
+Money uses whole UZS integers. Reservation snapshots unlock/minute pricing. Wallet transactions are simulated ledgers. Seed balances are illustrative allocations, independently assigned from historical debit records; this is not production accounting reconciliation.
+
+Seed: 250 riders plus admin/business accounts, 120 bikes, 18 stations, 12 teams, 80 valid hexagons, 40 missions, 1,120 historical rentals, six landmarks, a reward catalog, one active season and two fictional organizations. Historical influence is illustrative seed state; historical GPS logs are not fabricated. Browser tests add further demo records.
+
+The seed also supplies three demonstration passes, ten achievement definitions and one illustrative approved sponsor. Historical seeded influence has no fabricated contribution ledger. The competition-migration recovery preserved all 255 accounts present at recovery time and made an ignored database backup before continuing; later browser sessions add further users. Do not reuse the one-time recovery script on an already migrated database.
+
+Vitest rebuilds only `prisma/test.db`. `npm.cmd run demo:new` creates a separate timestamped demo database, preserving previous files. Set the printed DATABASE_URL in `.env` and restart to use it.
+
+`prisma/postgres/schema.prisma` and its initial migration are the PostgreSQL deployment path. It includes the same application models/relations as SQLite, a pooled runtime URL plus direct migration URL, PostGIS territory synchronization/indexing, partial active bike/user rental uniqueness, and RLS enabled on application tables. The API's private Prisma connection performs authorization in the existing protected routes; the frontend never receives a database credential. `npm.cmd run db:postgres:generate` generates the production Prisma client, and `npm.cmd run db:postgres:migrate` deploys the checked-in PostgreSQL migrations. The initial schema/migration is generated locally, but no Supabase credentials are configured and cloud connectivity has not been tested. Never apply SQLite migrations to PostgreSQL or regenerate an initial migration after it has been applied.

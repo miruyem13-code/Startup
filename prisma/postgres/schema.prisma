@@ -1,0 +1,500 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  passwordHash String
+  role String @default("USER")
+  xp Int @default(0)
+  points Int @default(0)
+  wallet Int @default(0)
+  weeklyGoal Int @default(30)
+  publicProfile Boolean @default(true)
+  status String @default("ACTIVE")
+  notificationPreferences Json @default("{}")
+  avatar String?
+  emailVerified Boolean @default(false)
+  createdAt DateTime @default(now())
+  teamId String?
+  team Team? @relation(fields: [teamId], references: [id])
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  sessions Session[]
+  rentals Rental[]
+  missions UserMission[]
+  influence TerritoryInfluence[]
+  redemptions RewardRedemption[]
+  transactions WalletTransaction[]
+  notifications Notification[]
+  stamps PassportStamp[]
+  achievements UserAchievement[]
+  audits AuditLog[]
+  resets PasswordReset[]
+  issues MaintenanceIssue[]
+  sentFriendships Friendship[] @relation("FriendRequester")
+  receivedFriendships Friendship[] @relation("FriendAddressee")
+  contributions TerritoryContribution[]
+  exploration MissionExploration[]
+  invitations MembershipInvitation[] @relation("InvitationRecipient")
+  sentInvitations MembershipInvitation[] @relation("InvitationSender")
+  subscriptions Subscription[]
+  verifications EmailVerification[]
+  @@index([role])
+}
+model Friendship {
+  id String @id @default(cuid())
+  requesterId String
+  requester User @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId String
+  addressee User @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status String @default("PENDING")
+  createdAt DateTime @default(now())
+  respondedAt DateTime?
+  pairKey String? @unique
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+}
+model Session {
+  id String @id
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  csrf String
+  expiresAt DateTime
+  @@index([expiresAt])
+}
+model PasswordReset {
+  id String @id
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used Boolean @default(false)
+}
+model Station {
+  id String @id @default(cuid())
+  name String
+  district String
+  lat Float
+  lng Float
+  capacity Int
+  enabled Boolean @default(true)
+  bikes Bicycle[]
+  rentals Rental[]
+}
+model Bicycle {
+  id String @id @default(cuid())
+  code String @unique
+  type String @default("CITY")
+  status String @default("AVAILABLE")
+  battery Int @default(100)
+  stationId String
+  station Station @relation(fields: [stationId], references: [id])
+  rentals Rental[]
+  issues MaintenanceIssue[]
+  @@index([stationId, status])
+}
+model Rental {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  bikeId String
+  bike Bicycle @relation(fields: [bikeId], references: [id])
+  state String @default("RESERVED")
+  reservedAt DateTime @default(now())
+  expiresAt DateTime
+  startedAt DateTime?
+  endedAt DateTime?
+  stationId String?
+  station Station? @relation(fields: [stationId], references: [id])
+  distanceM Int @default(0)
+  durationSec Int @default(0)
+  step Int @default(0)
+  simulationPaused Boolean @default(false)
+  price Int @default(0)
+  xp Int @default(0)
+  influence Int @default(0)
+  unlockFee Int @default(2000)
+  perMinute Int @default(400)
+  demo Boolean @default(true)
+  points RidePoint[]
+  contributions TerritoryContribution[]
+  battleScores BattleScore[]
+  @@index([userId, state])
+  @@index([organizationId, state, startedAt, endedAt])
+  @@index([bikeId, state])
+  @@index([endedAt])
+}
+model RidePoint {
+  id String @id @default(cuid())
+  rentalId String
+  rental Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  step Int
+  lat Float
+  lng Float
+  elapsedSec Int
+  @@unique([rentalId, step])
+}
+model Territory {
+  id String @id @default(cuid())
+  name String
+  district String
+  geometry Json
+  enabled Boolean @default(true)
+  influence TerritoryInfluence[]
+  contributions TerritoryContribution[]
+  ownership TerritoryOwnershipHistory[]
+  exploration MissionExploration[]
+}
+model TerritoryInfluence {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  territoryId String
+  territory Territory @relation(fields: [territoryId], references: [id])
+  seasonId String
+  season Season @relation(fields: [seasonId], references: [id])
+  score Int @default(0)
+  updatedAt DateTime @updatedAt
+  @@unique([userId, territoryId, seasonId])
+}
+model Season {
+  id String @id @default(cuid())
+  name String
+  startsAt DateTime
+  endsAt DateTime
+  status String @default("ACTIVE")
+  influence TerritoryInfluence[]
+  standings SeasonStanding[]
+  contributions TerritoryContribution[]
+  ownership TerritoryOwnershipHistory[]
+}
+model Mission {
+  id String @id @default(cuid())
+  name String
+  description String
+  category String
+  target Int
+  xp Int
+  points Int @default(0)
+  status String @default("PUBLISHED")
+  startsAt DateTime @default(now())
+  endsAt DateTime
+  sponsored Boolean @default(false)
+  difficulty String @default("EASY")
+  eligibility Json @default("{}")
+  sponsorId String?
+  sponsor Sponsor? @relation(fields: [sponsorId], references: [id])
+  participants UserMission[]
+  exploration MissionExploration[]
+}
+model UserMission {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  missionId String
+  mission Mission @relation(fields: [missionId], references: [id])
+  progress Int @default(0)
+  completedAt DateTime?
+  joinedAt DateTime?
+  visits MissionVisit[]
+  @@unique([userId, missionId])
+  @@index([userId, completedAt])
+}
+model Reward {
+  id String @id @default(cuid())
+  name String
+  description String
+  cost Int
+  stock Int
+  kind String
+  value Int @default(0)
+  sponsorId String?
+  sponsor Sponsor? @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
+  redemptions RewardRedemption[]
+  @@index([sponsorId])
+}
+model RewardRedemption {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  rewardId String
+  reward Reward @relation(fields: [rewardId], references: [id])
+  sponsorId String?
+  sponsor Sponsor? @relation("RewardRedemptionSponsor", fields: [sponsorId], references: [id], onDelete: SetNull)
+  key String @unique
+  code String
+  createdAt DateTime @default(now())
+  @@index([sponsorId, createdAt])
+}
+model WalletTransaction {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  amount Int
+  kind String
+  reference String @unique
+  createdAt DateTime @default(now())
+}
+model Team {
+  id String @id @default(cuid())
+  name String @unique
+  description String
+  color String
+  users User[]
+  participants BattleParticipant[]
+  invitations MembershipInvitation[]
+}
+model Organization {
+  id String @id @default(cuid())
+  name String
+  users User[]
+  rentals Rental[]
+  challenges CorporateChallenge[]
+  invitations MembershipInvitation[]
+  sponsors Sponsor[]
+}
+model Sponsor {
+  id String @id @default(cuid())
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  name String
+  description String
+  color String @default("#276749")
+  status String @default("PENDING")
+  startsAt DateTime
+  endsAt DateTime
+  missions Mission[]
+  rewards Reward[]
+  redemptions RewardRedemption[] @relation("RewardRedemptionSponsor")
+  @@index([organizationId, status])
+}
+model MissionVisit {
+  id String @id @default(cuid())
+  userMissionId String
+  userMission UserMission @relation(fields: [userMissionId], references: [id])
+  key String
+  @@unique([userMissionId, key])
+}
+model CorporateChallenge {
+  id String @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id])
+  name String
+  targetKm Int
+  startsAt DateTime @default(now())
+  endsAt DateTime
+}
+model Landmark {
+  id String @id @default(cuid())
+  name String
+  district String
+  lat Float
+  lng Float
+  stamps PassportStamp[]
+}
+model PassportStamp {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  landmarkId String
+  landmark Landmark @relation(fields: [landmarkId], references: [id])
+  earnedAt DateTime @default(now())
+  @@unique([userId, landmarkId])
+}
+model Achievement {
+  id String @id
+  name String
+  description String
+  users UserAchievement[]
+}
+model UserAchievement {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  achievementId String
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+  earnedAt DateTime @default(now())
+  @@unique([userId, achievementId])
+}
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  title String
+  body String
+  category String @default("ACTIVITY")
+  read Boolean @default(false)
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+model MaintenanceIssue {
+  id String @id @default(cuid())
+  bikeId String
+  bike Bicycle @relation(fields: [bikeId], references: [id])
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  description String
+  status String @default("OPEN")
+  severity String @default("NORMAL")
+  technician String?
+  notes String @default("")
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String
+  actor User @relation(fields: [actorId], references: [id])
+  action String
+  resource String
+  summary String
+  createdAt DateTime @default(now())
+}
+model SystemSetting {
+  key String @id
+  value Json
+  updatedAt DateTime @updatedAt
+}
+model TerritoryContribution {
+  id String @id @default(cuid())
+  rentalId String
+  rental Rental @relation(fields: [rentalId], references: [id])
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  territoryId String
+  territory Territory @relation(fields: [territoryId], references: [id])
+  seasonId String
+  season Season @relation(fields: [seasonId], references: [id])
+  score Int
+  createdAt DateTime @default(now())
+  @@unique([rentalId, territoryId])
+  @@index([userId, territoryId, createdAt])
+}
+model TerritoryOwnershipHistory {
+  id String @id @default(cuid())
+  territoryId String
+  territory Territory @relation(fields: [territoryId], references: [id])
+  seasonId String
+  season Season @relation(fields: [seasonId], references: [id])
+  previousUserId String?
+  ownerUserId String?
+  createdAt DateTime @default(now())
+  @@index([territoryId, createdAt])
+}
+model MissionExploration {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  missionId String
+  mission Mission @relation(fields: [missionId], references: [id])
+  territoryId String
+  territory Territory @relation(fields: [territoryId], references: [id])
+  @@unique([userId, missionId, territoryId])
+}
+model SeasonStanding {
+  id String @id @default(cuid())
+  seasonId String
+  season Season @relation(fields: [seasonId], references: [id])
+  userId String
+  name String
+  rank Int
+  score Int
+  @@unique([seasonId, userId])
+}
+model Battle {
+  id String @id @default(cuid())
+  name String
+  description String
+  startsAt DateTime
+  endsAt DateTime
+  status String @default("DRAFT")
+  metric String @default("DISTANCE")
+  rewardPoints Int @default(0)
+  finalizedAt DateTime?
+  participants BattleParticipant[]
+}
+model BattleParticipant {
+  id String @id @default(cuid())
+  battleId String
+  battle Battle @relation(fields: [battleId], references: [id])
+  teamId String
+  team Team @relation(fields: [teamId], references: [id])
+  score Int @default(0)
+  rank Int?
+  scores BattleScore[]
+  @@unique([battleId, teamId])
+}
+model BattleScore {
+  id String @id @default(cuid())
+  participantId String
+  participant BattleParticipant @relation(fields: [participantId], references: [id])
+  rentalId String
+  rental Rental @relation(fields: [rentalId], references: [id])
+  userId String
+  score Int
+  createdAt DateTime @default(now())
+  @@unique([participantId, rentalId])
+}
+model MembershipInvitation {
+  id String @id @default(cuid())
+  senderId String
+  sender User @relation("InvitationSender", fields: [senderId], references: [id])
+  userId String
+  user User @relation("InvitationRecipient", fields: [userId], references: [id])
+  teamId String?
+  team Team? @relation(fields: [teamId], references: [id])
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  status String @default("PENDING")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([userId, status])
+}
+model FeedbackReport {
+  id String @id @default(cuid())
+  name String
+  email String
+  message String
+  category String @default("CONTACT")
+  status String @default("OPEN")
+  createdAt DateTime @default(now())
+  @@index([status, createdAt])
+}
+model PricingPlan {
+  id String @id @default(cuid())
+  name String
+  price Int
+  durationDays Int
+  discountPercent Int @default(0)
+  enabled Boolean @default(true)
+  subscriptions Subscription[]
+}
+model Subscription {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  planId String
+  plan PricingPlan @relation(fields: [planId], references: [id])
+  startsAt DateTime @default(now())
+  endsAt DateTime
+  cancelledAt DateTime?
+  discountPercent Int
+  price Int
+  key String @unique
+  @@index([userId, endsAt])
+}
+model EmailVerification {
+  id String @id
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used Boolean @default(false)
+}

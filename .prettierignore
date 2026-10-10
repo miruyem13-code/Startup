@@ -1,0 +1,9 @@
+node_modules
+dist
+package-lock.json
+/public
+prisma/migrations
+prisma/postgres/migrations
+docs/screenshots
+test-results
+/src

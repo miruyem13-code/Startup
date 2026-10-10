@@ -1,0 +1,14 @@
+FROM node:24-bookworm-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+COPY package*.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+RUN npm ci --ignore-scripts
+COPY . .
+RUN DATABASE_URL=postgresql://build:build@localhost:5432/velocity DIRECT_URL=postgresql://build:build@localhost:5432/velocity npm run db:postgres:generate
+ENV NODE_ENV=production DEMO_MODE=false PORT=3001
+EXPOSE 3001
+CMD ["node", "--import", "tsx", "apps/api/src/server.ts"]
