@@ -30,7 +30,7 @@ import { engagementRouter } from './routes/engagement';
 import { standings } from './domain/standings';
 import { eligibleForMission, validatedMission } from './domain/missions';
 import { sponsorsRouter } from './routes/sponsors';
-import { corsOrigin, isAllowedOrigin } from './origins';
+import { corsOrigin, isAllowedOrigin, productionOrigin } from './origins';
 import type { User, Session } from '@prisma/client';
 declare global {
   namespace Express {
@@ -46,8 +46,8 @@ const friendshipPairKey = (first: string, second: string) => {
   return `${a.length}:${a}${b.length}:${b}`;
 };
 const demo = process.env.DEMO_MODE !== 'false' && process.env.NODE_ENV !== 'production';
-if (process.env.NODE_ENV === 'production' && !process.env.APP_ORIGIN?.startsWith('https://'))
-  throw new Error('Production requires an HTTPS APP_ORIGIN.');
+if (process.env.NODE_ENV === 'production' && !productionOrigin)
+  throw new Error('Production requires an HTTPS APP_ORIGIN or a Vercel production/deployment URL.');
 app.disable('x-powered-by');
 if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 app.use(helmet());
