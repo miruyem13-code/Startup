@@ -26,7 +26,7 @@ describe('compiled Vercel runtime', () => {
         }
       };
       for (const directory of ['api', 'apps/api/src', 'packages/shared']) compile(directory);
-      const entry = pathToFileURL(join(output, 'api/index.js')).href;
+      const entry = pathToFileURL(join(output, 'apps/api/src/vercel.js')).href;
       const result = spawnSync(process.execPath, ['--input-type=module', '--eval', `
         import { createServer } from 'node:http';
         import assert from 'node:assert/strict';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import request from 'supertest';
-import handler from '../api/index';
+import handler from '../apps/api/src/vercel';
 import config from '../vercel.json';
 
 describe('Vercel API routing', () => {

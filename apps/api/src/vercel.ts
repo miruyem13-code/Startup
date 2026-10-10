@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { app } from '../apps/api/src/app.js';
+import { app } from './app.js';
 
 export default function handler(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url || '/', 'https://internal.invalid');

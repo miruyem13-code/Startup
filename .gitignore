@@ -32,3 +32,4 @@ dist-ssr
 playwright-report/
 test-results/
 data/
+.vercel-backend/
