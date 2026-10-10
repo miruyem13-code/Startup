@@ -37,7 +37,11 @@ it('runs the deployed CommonJS wrapper and bundle in native production Node', ()
           assert.equal(response.status, 200);
           assert.equal(body.user, null);
           const rejected = await fetch(base + '/api/index?__velocity_path=auth/register', {
-            method: 'POST', headers: { Origin: 'https://untrusted.example' }
+            method: 'POST', headers: {
+              Origin: 'https://untrusted.example',
+              'X-Forwarded-For': '203.0.113.10',
+              Forwarded: 'for=198.51.100.23'
+            }
           });
           assert.equal(rejected.status, 403);
           assert.equal((await rejected.json()).message, 'Invalid request origin.');
@@ -47,13 +51,14 @@ it('runs the deployed CommonJS wrapper and bundle in native production Node', ()
     for (const missingDatabase of [false, true]) {
       const result = spawnSync(process.execPath, ['--input-type=module', '--eval', smoke], {
         encoding: 'utf8', timeout: 15000,
-        env: { ...process.env, NODE_ENV: 'production', DEMO_MODE: 'false',
+        env: { ...process.env, NODE_ENV: 'production', DEMO_MODE: 'false', VERCEL: '1',
           APP_ORIGIN: 'https://velocity-eight-dun.vercel.app',
           DATABASE_URL: missingDatabase ? '' : 'postgresql://runtime:runtime@127.0.0.1:5432/runtime',
           CHECK_MISSING_DATABASE: missingDatabase ? '1' : '',
         },
       });
       expect(result.status, result.stderr || result.error?.message).toBe(0);
+      if (!missingDatabase) expect(result.stderr).not.toContain('ValidationError');
     }
   } finally { rmSync(output, { recursive: true, force: true }); }
 });

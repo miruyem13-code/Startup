@@ -1,0 +1,10 @@
+.env*
+.git/
+node_modules/
+dist/
+.vercel-backend/
+prisma/*.db*
+data/
+logs/
+test-results/
+playwright-report/

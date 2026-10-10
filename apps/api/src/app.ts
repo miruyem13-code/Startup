@@ -1,7 +1,7 @@
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import { z, ZodError } from 'zod/v4';
 import { db, transaction } from './db.js';
@@ -49,14 +49,16 @@ const demo = process.env.DEMO_MODE !== 'false' && process.env.NODE_ENV !== 'prod
 if (process.env.NODE_ENV === 'production' && !productionOrigin)
   throw new Error('Production requires an HTTPS APP_ORIGIN or a Vercel production/deployment URL.');
 app.disable('x-powered-by');
-if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
+if (process.env.TRUST_PROXY === '1' || process.env.VERCEL === '1') app.set('trust proxy', 1);
+// Vercel's trusted proxy supplies X-Forwarded-For; do not use the client-supplied Forwarded header.
+const rateLimitKey = (req: Request) => ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown');
 app.use(helmet());
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 app.use(
   '/api',
-  rateLimit({ windowMs: 60000, limit: 300, standardHeaders: 'draft-8', legacyHeaders: false }),
+  rateLimit({ windowMs: 60000, limit: 300, standardHeaders: 'draft-8', legacyHeaders: false, keyGenerator: rateLimitKey }),
 );
 app.use(async (req, _res, next) => {
   try {
@@ -98,6 +100,7 @@ const business = (req: Request, _res: Response, next: NextFunction) =>
 const guardDemo = (_req: Request, _res: Response, next: NextFunction) =>
   demo ? next() : next(new ApiError(403, 'Demo adapters are unavailable in production.'));
 const authLimiter = rateLimit({
+  keyGenerator: rateLimitKey,
   windowMs: 15 * 60000,
   limit: 30,
   standardHeaders: 'draft-8',
