@@ -9,6 +9,7 @@
     "dev:api": "node scripts/dev-api.mjs",
     "build": "npm run typecheck && vite build",
     "netlify:build": "node scripts/netlify-build.mjs",
+    "vercel:build": "node scripts/netlify-build.mjs",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "node scripts/migrate.mjs",
