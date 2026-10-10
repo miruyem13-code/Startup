@@ -1,10 +1,10 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
-import { app, setBroadcast, setSocketRevoker } from './app';
-import { db, transaction } from './db';
-import { maintainCompetitions } from './domain/competition';
-import { digest } from './security';
-import { corsOrigin } from './origins';
+import { app, setBroadcast, setSocketRevoker } from './app.js';
+import { db, transaction } from './db.js';
+import { maintainCompetitions } from './domain/competition.js';
+import { digest } from './security.js';
+import { corsOrigin } from './origins.js';
 const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: corsOrigin, credentials: true },

@@ -68,6 +68,14 @@ Migrations 004 identity/billing, 005 mission/sponsors, 006 mission join time, 00
 
 ## Remaining external verification
 
+### Vercel production diagnosis (2026-10-11)
+
+- GitHub main commit `93d80c2` is deployed as Production/Ready per the user's Vercel screenshot.
+- A live unauthenticated GET to `https://velocity-eight-dun.vercel.app/api/session` returned HTTP 500, text/plain, `X-Vercel-Error: FUNCTION_INVOCATION_FAILED`. Routing now reaches a function, but runtime initialization/invocation fails. Homepage map error is an API failure, not a missing image.
+- User-provided runtime logs confirmed `ERR_MODULE_NOT_FOUND` for `/var/task/apps/api/src/app` imported by `/var/task/api/index.js`. All relative imports in the API entrypoint/backend now use explicit `.js` extensions for native Node ESM after TypeScript compilation, including shared schema imports. No business logic or security checks changed.
+- Added `tests/vercel-runtime.test.ts`: transpiles the complete backend dependency graph to JavaScript, launches native Node (no tsx/Vite loader) in production mode, checks the rewritten anonymous session and rejection of untrusted registration origins. Both routing/runtime test files passed (5 tests). This smoke test deliberately performs no DB connection; cloud persistence is still unverified. Existing CLI credentials are invalid.
+- `apps/api/src/db.ts` intentionally rejects missing/non-PostgreSQL production DATABASE_URL. Check Production environment variables and Prisma packaging/runtime imports using the actual exception before changing code. Real Supabase credentials/migrations remain unverified.
+
 PostgreSQL/PostGIS runtime, containers and public deployment remain untested; Docker/PostgreSQL were unavailable at baseline. Real hardware, external email/payment provider delivery, native background GPS and push require integrations. Explicit demo adapters must remain labeled; never claim real integrations work.
 
 ## Commands and constraints

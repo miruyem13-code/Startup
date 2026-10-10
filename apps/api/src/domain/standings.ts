@@ -1,7 +1,7 @@
 import { z } from 'zod/v4';
-import { db } from '../db';
-import { requireThat } from '../security';
-import { weekKey } from './progression';
+import { db } from '../db.js';
+import { requireThat } from '../security.js';
+import { weekKey } from './progression.js';
 
 export const standingsSchema = z.object({
   metric: z.enum(['XP', 'DISTANCE', 'INFLUENCE', 'MISSIONS', 'TEAMS']).default('XP'),

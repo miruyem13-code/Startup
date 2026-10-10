@@ -1,7 +1,7 @@
 import { z } from 'zod/v4';
-import type { Transaction } from '../db';
-import { requireThat } from '../security';
-import { awardAchievement } from './progression';
+import type { Transaction } from '../db.js';
+import { requireThat } from '../security.js';
+import { awardAchievement } from './progression.js';
 
 export const rulesSchema = z.object({
   unlockFee: z.number().int().min(0).max(100000),

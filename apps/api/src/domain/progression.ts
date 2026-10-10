@@ -1,4 +1,4 @@
-import type { Transaction } from '../db';
+import type { Transaction } from '../db.js';
 
 export const achievementDefinitions = [
   {

@@ -1,8 +1,8 @@
 import { Router, type RequestHandler } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod/v4';
-import { db, transaction } from '../db';
-import { requireThat, token, digest } from '../security';
+import { db, transaction } from '../db.js';
+import { requireThat, token, digest } from '../security.js';
 
 export function engagementRouter(
   auth: RequestHandler,

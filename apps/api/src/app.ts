@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import { z, ZodError } from 'zod/v4';
-import { db, transaction } from './db';
+import { db, transaction } from './db.js';
 import {
   hashPassword,
   verifyPassword,
@@ -13,7 +13,7 @@ import {
   ApiError,
   requireThat,
   safeUser,
-} from './security';
+} from './security.js';
 import {
   loginSchema,
   registerSchema,
@@ -21,16 +21,16 @@ import {
   bikeSchema,
   stationSchema,
   missionSchema,
-} from '../../../packages/shared/schemas';
-import { catalog, dashboard, analytics } from './domain/queries';
-import { expireReservations, advanceRide, finishRide, DemoLock } from './domain/ride';
-import { getRules, maintainCompetitions, requireTeamChangeAllowed } from './domain/competition';
-import { operationsRouter } from './routes/operations';
-import { engagementRouter } from './routes/engagement';
-import { standings } from './domain/standings';
-import { eligibleForMission, validatedMission } from './domain/missions';
-import { sponsorsRouter } from './routes/sponsors';
-import { corsOrigin, isAllowedOrigin, productionOrigin } from './origins';
+} from '../../../packages/shared/schemas.js';
+import { catalog, dashboard, analytics } from './domain/queries.js';
+import { expireReservations, advanceRide, finishRide, DemoLock } from './domain/ride.js';
+import { getRules, maintainCompetitions, requireTeamChangeAllowed } from './domain/competition.js';
+import { operationsRouter } from './routes/operations.js';
+import { engagementRouter } from './routes/engagement.js';
+import { standings } from './domain/standings.js';
+import { eligibleForMission, validatedMission } from './domain/missions.js';
+import { sponsorsRouter } from './routes/sponsors.js';
+import { corsOrigin, isAllowedOrigin, productionOrigin } from './origins.js';
 import type { User, Session } from '@prisma/client';
 declare global {
   namespace Express {

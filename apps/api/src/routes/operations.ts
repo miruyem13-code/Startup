@@ -1,7 +1,7 @@
 import { Router, type RequestHandler } from 'express';
 import { z } from 'zod/v4';
-import { db, transaction } from '../db';
-import { requireThat } from '../security';
+import { db, transaction } from '../db.js';
+import { requireThat } from '../security.js';
 import {
   closeSeason,
   finalizeBattle,
@@ -9,9 +9,9 @@ import {
   maintainCompetitions,
   requireTeamChangeAllowed,
   rulesSchema,
-} from '../domain/competition';
-import { StatisticalDemandProvider } from '../domain/intelligence';
-import { weekKey } from '../domain/progression';
+} from '../domain/competition.js';
+import { StatisticalDemandProvider } from '../domain/intelligence.js';
+import { weekKey } from '../domain/progression.js';
 
 const teamSchema = z.object({
   name: z.string().trim().min(3).max(80),

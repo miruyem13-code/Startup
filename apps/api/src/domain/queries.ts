@@ -1,7 +1,7 @@
-import { db } from '../db';
-import { safeUser } from '../security';
-import { getRules } from './competition';
-import { weeklyConsistency } from './progression';
+import { db } from '../db.js';
+import { safeUser } from '../security.js';
+import { getRules } from './competition.js';
+import { weeklyConsistency } from './progression.js';
 export async function catalog() {
   const [stations, bikes, territories, missions, season, landmarks, rewards, teams, activity] =
     await Promise.all([

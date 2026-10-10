@@ -1,7 +1,7 @@
-import type { Transaction } from '../db';
-import { missionEligibilitySchema, missionSchema } from '../../../../packages/shared/schemas';
+import type { Transaction } from '../db.js';
+import { missionEligibilitySchema, missionSchema } from '../../../../packages/shared/schemas.js';
 import type { z } from 'zod/v4';
-import { requireThat } from '../security';
+import { requireThat } from '../security.js';
 
 export function eligibleForMission(
   eligibility: unknown,

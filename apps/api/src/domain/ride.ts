@@ -1,9 +1,9 @@
 import * as turf from '@turf/turf';
-import { DEMO_ROUTE, PRICING, missionEligibilitySchema } from '../../../../packages/shared/schemas';
-import type { Transaction } from '../db';
-import { requireThat } from '../security';
-import { getRules, maintainCompetitions, scoreBattles } from './competition';
-import { evaluateProgression } from './progression';
+import { DEMO_ROUTE, PRICING, missionEligibilitySchema } from '../../../../packages/shared/schemas.js';
+import type { Transaction } from '../db.js';
+import { requireThat } from '../security.js';
+import { getRules, maintainCompetitions, scoreBattles } from './competition.js';
+import { evaluateProgression } from './progression.js';
 export interface LockAdapter {
   unlock(bikeId: string): Promise<{ simulated: boolean }>;
 }

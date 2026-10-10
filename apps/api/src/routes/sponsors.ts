@@ -1,9 +1,9 @@
 import { Router, type RequestHandler } from 'express';
 import { z } from 'zod/v4';
-import { db, transaction } from '../db';
-import { requireThat } from '../security';
-import { missionSchema } from '../../../../packages/shared/schemas';
-import { validatedMission } from '../domain/missions';
+import { db, transaction } from '../db.js';
+import { requireThat } from '../security.js';
+import { missionSchema } from '../../../../packages/shared/schemas.js';
+import { validatedMission } from '../domain/missions.js';
 
 const sponsorSchema = z.object({
   name: z.string().trim().min(3).max(80),

@@ -47,6 +47,8 @@ The Netlify build creates the PostgreSQL Prisma client without connecting to the
 
 ### Vercel
 
+Backend relative imports must include `.js` extensions: Vercel emits TypeScript as native Node ES modules. Extensionless imports can build successfully but fail at runtime with `ERR_MODULE_NOT_FOUND`. Run `npm test -- tests/vercel-routing.test.ts tests/vercel-runtime.test.ts` to check routing and the compiled backend dependency graph without a TypeScript runtime loader.
+
 The root `vercel.json` keeps Vite's `dist` output and the root `api/index.ts` function serves the existing Express REST API under `/api/*`. Keep Vercel's Root Directory set to the repository root. In Vercel Project Settings → Environment Variables, configure `NODE_ENV=production`, `DEMO_MODE=false`, the exact HTTPS production `APP_ORIGIN`, and the secret `DATABASE_URL`/`DIRECT_URL` values for Supabase (same requirements as above). Apply the Supabase migrations before testing. Verify `https://<your-vercel-domain>/api/health`; API auth will reject writes if `APP_ORIGIN` does not exactly match the public origin. Preview deployment domains need their own exact `APP_ORIGIN` in the Preview environment to use login there. Vercel Functions handle REST; Socket.IO needs a persistent host.
 
 Real rental mutations still require smart-lock/telemetry/payment providers; production operations also need account provisioning, storage/email integrations and operational policy review. The Docker/PostGIS path and Supabase connection have not been runtime-tested in this workspace. Never seed production with the local demo dataset.
