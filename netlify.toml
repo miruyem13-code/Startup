@@ -1,8 +1,25 @@
 [build]
 # This monorepo builds from the repository root, not apps/api.
 base = "."
-command = "npm run build"
+command = "npm run netlify:build"
 publish = "dist"
 
 [build.environment]
 NODE_VERSION = "24"
+
+[functions]
+directory = "netlify/functions"
+node_bundler = "esbuild"
+external_node_modules = ["@prisma/client", "express", "serverless-http"]
+included_files = ["node_modules/.prisma/client/**", "prisma/postgres/schema.prisma"]
+
+[[redirects]]
+from = "/api/*"
+to = "/.netlify/functions/api/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
